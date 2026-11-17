@@ -1,9 +1,9 @@
 # MIB2 Wireless CarPlay — MHI2
 
-Wireless CarPlay for the MIB2 SEAT P4709 harman head unit, with the CarPlay map card
+Currently available for the MIB2 SEAT P4709 harman head units, with the CarPlay map
 rendered in the instrument cluster.
 
-Installs as an SWDL software-update card, or manually over SSH.
+Installs as normal software-update via sd-card, or manually over SSH.
 
 ---
 
@@ -26,7 +26,7 @@ firmware trains with different HMI class layouts.
   cable. Bluetooth pairing is bridged so the phone treats it as a normal
   CarPlay session stable and smooth.
 - **CarPlay map card in the instrument cluster**, at the cluster's native
-  1010 × 376 with the correct safe area for seat clusters.
+  1010 × 376 with the correct safe area.
 - **Navigation guidance data Card** on the cluster card (manoeuvre, distance,
   street).
 - **Touch on the main screen** is forwarded to the phone with the correct
@@ -62,7 +62,7 @@ behind a wrapper.
    `payload/`. Do not nest everything inside an extra folder.
 3. Insert the card into the unit.
 4. Open the software-update / SWDL menu and start the update. The updater lists
-   **Nadeem Wireless Carplay V1.0**.
+   **Wireless Carplay V1.0**.
 5. The updater runs the package, restarts the unit, then runs it a second time to
    finalise. This two-pass behaviour is normal — let both passes finish.
 6. Restart the unit once more before connecting a phone.
@@ -224,4 +224,4 @@ delete it yourself once you are satisfied. If it is missing, the script stops at
 
 ---
 
-Original wireless engine and Altscreen maps for : **omonob** https://github.com/omonob/VW-MHI2-Wireless-Carplay-Maps
+Original wireless engine and Altscreen maps scripts for : **omonob** https://github.com/omonob/VW-MHI2-Wireless-Carplay-Maps
