@@ -1,10 +1,9 @@
 # MIB2 Wireless CarPlay — MHI2
 
-Wireless CarPlay for the MIB2 SEAT P4709_MU1447 head unit, with the CarPlay map card
-rendered in the instrument cluster together with navigation guidance data.
+Wireless CarPlay for the MIB2 SEAT P4709 harman head unit, with the CarPlay map card
+rendered in the instrument cluster.
 
-Installs as an SWDL software-update card, or manually over SSH. Nothing here
-reboots the unit and nothing stops a shared ESO service.
+Installs as an SWDL software-update card, or manually over SSH.
 
 ---
 
@@ -16,7 +15,7 @@ MHI2_ER_SEG11_P4709_MU1447
 
 ## Compatibility
 
-Do not install this on VW or SKODA firmwares MU1367, MU1433 or MU1440. They are different
+Do not install this on AUDI , VW or SKODA firmwares MU1367, MU1433 or MU1440. They are different
 firmware trains with different HMI class layouts.
 
 ---
@@ -25,9 +24,9 @@ firmware trains with different HMI class layouts.
 
 - **Wireless CarPlay.** The phone connects over the unit's own WLAN hotspot; no
   cable. Bluetooth pairing is bridged so the phone treats it as a normal
-  CarPlay session.
+  CarPlay session stable and smooth.
 - **CarPlay map card in the instrument cluster**, at the cluster's native
-  1010 × 376 with the correct safe area.
+  1010 × 376 with the correct safe area for seat clusters.
 - **Navigation guidance data Card** on the cluster card (manoeuvre, distance,
   street).
 - **Touch on the main screen** is forwarded to the phone with the correct
@@ -225,20 +224,4 @@ delete it yourself once you are satisfied. If it is missing, the script stops at
 
 ---
 
-## Repository layout
-
-```
-metainfo2.txt          SWDL train descriptor (CRLF line endings)
-install.sh             installer — runs on the unit
-uninstall.sh           rollback to the first baseline
-final/
-  finalScript.sh       the script the SWDL updater executes
-  hashes.txt           SHA1 manifest of final/
-  wireless.ver         update marker copied by the updater
-payload/
-  common/              VC installer, merge helper, native libraries
-  profiles/MU1447/790/ core.so, VCMenu.jar, VCMirrorRate.jar, CarPlayClusterControls.jar
-  wireless/            wireless engine, four HMI jars, runtime, display profiles
-```
-
-Original wireless engine and Altscreen maps for : **omonob**
+Original wireless engine and Altscreen maps for : **omonob** https://github.com/omonob/VW-MHI2-Wireless-Carplay-Maps
