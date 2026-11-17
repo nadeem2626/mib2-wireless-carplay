@@ -1,0 +1,7 @@
+FileName = "finalScript.sh"
+FileSize = "1514"
+CheckSum = "0689f740edf22912321fb5b7acfd1bb2dc25f548"
+
+FileName = "wireless.ver"
+FileSize = "29"
+CheckSum = "b40cfb0f119c800eea2262e0b7562c1bfbca0e86"

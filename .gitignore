@@ -1,0 +1,9 @@
+# Local-only / build artefacts
+.ghtok
+*.token
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~

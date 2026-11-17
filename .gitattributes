@@ -1,0 +1,46 @@
+# Text files Git may normalise. The unit's shell must see LF: with CRLF the
+# shebang becomes "/bin/sh\r", the kernel reports "cannot execute - No such file
+# or directory", and the QNX ksh has no sed/awk/tr to repair it afterwards.
+*.sh    text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.py    text eol=lf
+*.conf  text eol=lf
+*.geom  text eol=lf
+*.json  text eol=lf
+*.tsv   text eol=lf
+
+# Files the device reads as plain text but that carry no extension.
+payload/wireless/profiles/AID10.5-17PM/cluster-profile  text eol=lf
+payload/wireless/common/config/btwcp_enable             text eol=lf
+payload/wireless/common/config/btwcp_present_target     text eol=lf
+payload/wireless/common/config/wcp_autostart            text eol=lf
+payload/wireless/common/config/wcp_cp_stage             text eol=lf
+final/hashes.txt                                        text eol=lf
+final/wireless.ver                                      text eol=lf
+
+# metainfo2.txt carries a signed CRLF body and its own checksum chain; never
+# normalise its bytes on any checkout platform.
+metainfo2.txt -text
+
+# Payload binaries - never touch. The QNX executables have no extension, so they
+# are named outright rather than matched by pattern.
+*.jar   binary
+*.so    binary
+
+payload/common/altscreen-most-bridge            binary
+payload/common/carplay-cluster-supervisor       binary
+payload/common/carplay-pairing-helper           binary
+payload/common/cpmap-nav-check                  binary
+payload/common/cpvc-mirror-canvas-790           binary
+payload/common/cpvc-mirror-canvas-791           binary
+payload/common/libomonob-primary30.so           binary
+
+payload/wireless/config-patch                        binary
+payload/wireless/common/ota/wcp_video                binary
+payload/wireless/common/runtime/wireless-video-exec  binary
+payload/wireless/common/runtime/wcp_video_stock      binary
+payload/wireless/common/runtime/wcp_video_tap        binary
+payload/wireless/profiles/AID10.5-17PM/wcp_receiver           binary
+payload/wireless/profiles/AID10.5-17PM/wireless-entry         binary
+payload/wireless/profiles/AID10.5-17PM/wireless-receiver-exec binary
