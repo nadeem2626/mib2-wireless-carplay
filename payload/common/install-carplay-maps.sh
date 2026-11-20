@@ -193,12 +193,8 @@ else
 fi
 
 echo "Wireless CarPlay Maps"
-echo "Project integration and maintainer: omonob"
 echo "Detected firmware: $DETECTED_MU (lsd.jxe $JXE_SIZE bytes)"
 echo "Selected cluster: $INSTRUMENT"
-echo "Scope: VC settings, CarPlay map video, native mirroring and navigation cards"
-echo "Wireless engine is installed separately in this same transaction on exact MU1102, MU1367 and MU1440 profiles"
-echo "No music metadata, startup animation, device binding, or paid watchdog"
 
 if [ -n "${CPMAP_TEST_ROOT:-}" ]; then
     :
