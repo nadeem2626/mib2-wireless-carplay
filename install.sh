@@ -43,6 +43,21 @@ command -v dirname >/dev/null 2>&1 || die REQUIRED_TOOL_MISSING_dirname
 SELF_DIR=$(cd "$(dirname "$0")" && pwd)
 STAGE=${STAGE:-$SELF_DIR/payload}
 
+# ---- MODE SWITCH: ONE marker file decides, nothing else. An empty file named
+# "uninstall" next to this script hands the whole run to uninstall.sh; without it
+# this script installs. "uninstall.txt" is accepted as the same marker, because
+# Windows often adds the .txt extension without telling you. No script ever
+# creates, renames or removes the marker, so
+# every lap of a multi-lap SWDL run takes the same branch (a second uninstall lap
+# finds the unit already clean and writes nothing).
+if [ -e "$SELF_DIR/uninstall" ] || [ -e "$SELF_DIR/uninstall.txt" ]; then
+    say "MODE: UNINSTALL (marker file 'uninstall' or 'uninstall.txt' found next to install.sh)"
+    # Never fall through to an install when the user asked for an uninstall.
+    [ -f "$SELF_DIR/uninstall.sh" ] || die UNINSTALL_MARKER_PRESENT_BUT_NO_UNINSTALL_SH
+    exec sh "$SELF_DIR/uninstall.sh" || die UNINSTALL_EXEC_FAILED
+fi
+say "MODE: INSTALL"
+
 LSDBASE=/mnt/app/eso/hmi/lsd
 ROOT=/mnt/app/carplaymaps
 # The baseline must live OUTSIDE the tree it snapshots: it copies the whole
@@ -639,6 +654,6 @@ rm -rf "$LOCK"
 # The project's own installer already wrote $ROOT/VERSION and $ROOT/PROFILE.
 sync
 say "done"
-ok MANUAL_INSTALL_COMPLETE
+ok INSTALL_COMPLETE
 echo "Restart the unit manually. Nothing was rebooted and no shared ESO service was stopped."
 exit 0
