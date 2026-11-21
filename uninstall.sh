@@ -31,6 +31,14 @@ OTA=/mnt/ota
 LSDBAK=/mnt/app/eso/hmi/lsd
 PRODDIR=/mnt/system/etc/eso/production
 
+# Every flag/state file this project (scripts, receiver, jars, libbtwcp) can create
+# in /mnt/persist. One list, used by the clean check, the cleanup and the audit.
+PROJECT_FLAGS="btwcp_enable btwcp_present_target btwcp_off btwcp_phonemac \
+ wcp_autostart wcp_cp_stage wcp_cp_off wcp_autofront_off wcp_debug \
+ wcp_touch_off wcp_touch_inject wcp_si_off wcp_si_addr wcp_hs_off \
+ wcp_pfwatch_off wcp_btaudio_release altscreen_smallcard \
+ altscreen.conf altscreen.geom v75-wireless-display.conf"
+
 LOCK=/ramdisk/.wmaps-manual.lock
 LOCK_OWNED=0
 STAGED=/ramdisk/.wmaps-staged-$$
@@ -76,9 +84,13 @@ mkdir "$LOCK" 2>/dev/null || die ANOTHER_RUN_ACTIVE_OR_STALE_LOCK_$LOCK
 LOCK_OWNED=1
 
 # Identity-checked process stop. A pid file alone proves nothing: only a live pid
-# whose pidin line matches one of the expected names is terminated (TERM only,
-# never KILL). It must actually be gone afterwards, because deleting the files of
-# a running process is exactly what this script must never do.
+# whose pidin line matches one of the expected names gets TERM (never KILL).
+# A process that ignores TERM, or is stuck in a driver call, must NOT block the
+# restore: every restored file is replaced by an atomic rename, which is safe while
+# the old file is still running (install.sh does the same to the running btstack and
+# dio_manager), and the unit is restarted afterwards anyway. It is reported instead.
+STILL_RUNNING=0
+is_zombie() { pidin -p "$1" 2>/dev/null | grep -q ZOMBIE; }
 stop_pid() {   # $1 = pid file, $2 = space-separated expected names
     [ -f "$1" ] || return 0
     P=$(cat "$1" 2>/dev/null)
@@ -92,11 +104,15 @@ stop_pid() {   # $1 = pid file, $2 = space-separated expected names
         if [ "$match" = 1 ]; then
             kill "$P" 2>/dev/null
             i=0
-            while [ "$i" -lt 8 ] && kill -0 "$P" 2>/dev/null; do
+            while [ "$i" -lt 8 ] && kill -0 "$P" 2>/dev/null && ! is_zombie "$P"; do
                 sleep 1
                 i=$((i+1))
             done
-            kill -0 "$P" 2>/dev/null && die PROCESS_WONT_STOP_pid$P
+            # an exited process that is only waiting to be reaped counts as stopped
+            if kill -0 "$P" 2>/dev/null && ! is_zombie "$P"; then
+                STILL_RUNNING=$((STILL_RUNNING+1))
+                say "WARNING: pid $P ($2) ignored TERM and is still running - continuing"
+            fi
         fi
     fi
     rm -f "$1"
@@ -247,6 +263,39 @@ else
     say "NOTE: this baseline has no CKSUMS record (older installer); only the six factory files are proven"
 fi
 
+# ------------------------------------------------- already clean? (read-only) ---
+# A second SWDL lap (or any repeated run) finds the unit already restored. Then there
+# is nothing to do and NOTHING is written: no needless flash writes, no power-cut
+# window. The baseline was proven above, so "equals the baseline" is a real claim.
+say "checking whether the unit is already at the baseline"
+DIRTY=0
+while read -r state path; do
+    case "$state" in
+        PRESENT)
+            [ "$(cksum_of "$path")" = "$(cksum_of "$BAK/files$path")" ] || DIRTY=$((DIRTY+1)) ;;
+        MISSING)
+            [ ! -e "$path" ] || DIRTY=$((DIRTY+1)) ;;
+    esac
+    [ "$DIRTY" = 0 ] || break
+done < "$BAK/MANIFEST"
+# runtime tree: a "no runtime" baseline needs ROOT gone; a restored runtime tree
+# cannot be compared cheaply, so that case always takes the (idempotent) full path.
+[ "$RT" = no ]            || DIRTY=$((DIRTY+1))
+[ ! -e "$ROOT" ]          || DIRTY=$((DIRTY+1))
+[ ! -e "$RT_NEW" ]        || DIRTY=$((DIRTY+1))
+[ ! -e "$RT_OLD" ]        || DIRTY=$((DIRTY+1))
+for f in $PROJECT_FLAGS; do
+    [ ! -e "$PERSIST/$f" ] || DIRTY=$((DIRTY+1))
+done
+[ ! -e "$PERSIST/wcp" ]          || DIRTY=$((DIRTY+1))
+[ ! -e "$PERSIST/omonob-phone" ] || DIRTY=$((DIRTY+1))
+if [ "$DIRTY" = 0 ]; then
+    say "unit already equals the baseline - nothing to do, nothing written"
+    cleanup
+    ok ALREADY_CLEAN
+    exit 0
+fi
+
 # ------------------------------------------------------------ 3. stop processes ---
 say "stopping project children"
 for n in carplay-cluster-supervisor altscreen-most-bridge carplay-pairing-helper; do
@@ -257,6 +306,9 @@ stop_pid /dev/shmem/wcp_video.pid    "wcp_video wireless-video-exec"
 stop_pid /dev/shmem/wcp_pfwatch.pid  "wcp_pfwatch"
 stop_pid /ramdisk/omonob-791-input.pid "wireless-entry"
 ok STOPPED
+if [ "$STILL_RUNNING" -gt 0 ]; then
+    say "NOTE: $STILL_RUNNING process(es) still running; the files are replaced safely and the restart ends them"
+fi
 
 # ------------------------------------------------------------ 4. remount + probe ---
 say "remount read-write"
@@ -334,12 +386,7 @@ ok RUNTIME_RESTORED
 
 # ----------------------------------------------------- 8. project state + audit ---
 say "cleaning project state"
-# Every flag/state file this project (scripts, receiver, jars, libbtwcp) can create.
-for f in btwcp_enable btwcp_present_target btwcp_off btwcp_phonemac \
-         wcp_autostart wcp_cp_stage wcp_cp_off wcp_autofront_off wcp_debug \
-         wcp_touch_off wcp_touch_inject wcp_si_off wcp_si_addr wcp_hs_off \
-         wcp_pfwatch_off wcp_btaudio_release altscreen_smallcard \
-         altscreen.conf altscreen.geom v75-wireless-display.conf; do
+for f in $PROJECT_FLAGS; do
     rm -f "$PERSIST/$f"
 done
 rm -rf "$PERSIST/wcp" "$PERSIST/omonob-phone"
@@ -398,11 +445,7 @@ else
     say "CARPLAYMAPS_REFERENCES=0"
 fi
 SW=0
-for f in btwcp_enable btwcp_present_target btwcp_off btwcp_phonemac \
-         wcp_autostart wcp_cp_stage wcp_cp_off wcp_autofront_off wcp_debug \
-         wcp_touch_off wcp_touch_inject wcp_si_off wcp_si_addr wcp_hs_off \
-         wcp_pfwatch_off wcp_btaudio_release altscreen_smallcard \
-         altscreen.conf altscreen.geom v75-wireless-display.conf; do
+for f in $PROJECT_FLAGS; do
     [ ! -e "$PERSIST/$f" ] || SW=$((SW+1))
 done
 [ ! -e "$PERSIST/omonob-phone" ] || SW=$((SW+1))
