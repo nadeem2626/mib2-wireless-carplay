@@ -1,5 +1,5 @@
 #!/bin/sh
-# Wireless CarPlay Maps for MU1447 - MANUAL SSH UNINSTALL / ROLLBACK
+# Wireless CarPlay Maps for MU1447 -  UNINSTALL / ROLLBACK
 #
 # Restores the first baseline written by ./install.sh (the factory bytes).
 #
@@ -477,7 +477,7 @@ if [ "$WARN" -gt 0 ]; then
     echo "Restart the unit manually; the baseline is kept at $BAK."
     exit 2
 fi
-ok MANUAL_UNINSTALL_COMPLETE
+ok UNINSTALL_COMPLETE
 echo "Restart the unit manually to return the HMI to its factory classpath."
 echo "Baseline kept at $BAK for inspection; delete it yourself once satisfied."
 exit 0
