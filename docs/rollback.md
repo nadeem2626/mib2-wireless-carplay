@@ -8,7 +8,10 @@ From the staged folder (see [installation](installation.md)):
 
 ```sh
 ssh root@<unit> 'cd /mnt/app/.wmaps-manual && sh uninstall.sh'
-ssh root@<unit> 'shutdown -r'
+or
+from sd card over terminal :
+cd /fs/sda0/
+sh uninstall.sh
 ```
 
 If you deleted the staging folder, copy it again first, or run
@@ -20,7 +23,7 @@ Either of these is enough to start the removal through the SWDL menu:
 
 - Download the ready `uninstall` file from the release and copy it to a FAT32
   card, or
-- create an empty file named `uninstall` on the card yourself.
+- create an empty file named `uninstall` on the card yourself and run swdl update.
 
 That file alone starts the removal.
 
