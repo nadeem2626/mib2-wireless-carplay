@@ -45,7 +45,11 @@ that is not an installer failure.
 You need SSH access to the unit as `root`. `<unit>` below is its IP address.
 
 **1. Stage the tree on the unit.** From the folder that contains the package:
-
+from sd :
+cd /fs/sda0/
+sh install.sh
+then reboot the unit .
+or 
 ```sh
 ssh root@<unit> 'mkdir -p /mnt/app/.wmaps-manual'
 scp -r metainfo2.txt install.sh uninstall.sh final payload \
