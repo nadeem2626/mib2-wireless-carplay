@@ -23,7 +23,7 @@ navigation maps in the instrument cluster — over wired and wireless.
 
 | Brand | Firmware train | Cluster map |
 |---|---|---|
-| SEAT | `MHI2_ER_SEG11_P4709_MU1447` | 1010 × 376 |(10.5-inch)|
+| SEAT | `MHI2_ER_SEG11_P4709_MU1447` | 1010 × 376 |(10.5-inch)
 | VW | `MHI2_ER_VWG13_K4525_MU1367` | 800 × 480 (12.3-inch, 791) |
 
 > **Warning — only these two trains are supported.** Every other firmware — including AUDI and SKODA MU1433 / MU1440 and any other VW or SEAT build — uses different HMI class layouts. Do not install on it.
